@@ -1,0 +1,12 @@
+apiVersion: motd.alanraison.github.io/v1alpha1
+kind: MotdSource
+metadata:
+  name: example-motdsource
+spec:
+  hostname: myserver
+  port: 22
+  username: root
+  privateKey: |
+    --- BEGIN RSA PRIVATE KEY ---
+    abcde
+    --- END RSA PRIVATE KEY ---
