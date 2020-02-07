@@ -6,6 +6,7 @@ import (
 
 	motdv1alpha1 "github.com/alanraison/motd-operator/pkg/apis/motd/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -97,16 +98,25 @@ func (r *ReconcileMotdSource) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	t, motd, err := fetchMotd(instance.Spec)
+	motd, err := fetchMotd(instance.Spec)
 	if err != nil {
+		status := motdv1alpha1.MotdSourceStatus{
+			Updated: metav1.Now(),
+			Error:   err.Error(),
+		}
+		instance.Status = status
+		reqLogger.Error(err, "fetching motd")
+		r.client.Status().Update(context.TODO(), instance) // ignore errors
 		return reconcile.Result{}, err
 	}
 	status := motdv1alpha1.MotdSourceStatus{
-		Updated: t.Unix(),
+		Updated: metav1.Now(),
 		Message: motd,
 	}
 	instance.Status = status
-	r.client.Status().Update(context.TODO(), instance)
+	if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		return reconcile.Result{}, err
+	}
 
 	reqLogger.Info("Updated MotdSource; requeuing in 30s")
 	return reconcile.Result{
