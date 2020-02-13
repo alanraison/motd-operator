@@ -16,7 +16,7 @@ spec:
       containers:
         - name: motd-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: motd-operator
           command:
           - motd-operator
           imagePullPolicy: Always

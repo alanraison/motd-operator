@@ -3,6 +3,16 @@ kind: CustomResourceDefinition
 metadata:
   name: motdsources.motd.alanraison.github.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.address
+    name: Address
+    type: string
+  - JSONPath: .status.short_message
+    name: Message
+    type: string
+  - JSONPath: .status.error
+    name: Error
+    type: string
   group: motd.alanraison.github.io
   names:
     kind: MotdSource
@@ -10,8 +20,7 @@ spec:
     plural: motdsources
     singular: motdsource
   scope: Namespaced
-  subresources:
-    status: {}
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: MotdSource is the Schema for the motdsources API
@@ -31,21 +40,18 @@ spec:
         spec:
           description: MotdSourceSpec defines the desired state of MotdSource
           properties:
-            hostname:
+            address:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "operator-sdk generate k8s" to regenerate code after
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
               type: string
-            port:
-              type: integer
             privateKey:
               type: string
             username:
               type: string
           required:
-          - hostname
-          - port
+          - address
           - privateKey
           - username
           type: object
@@ -54,7 +60,9 @@ spec:
           properties:
             error:
               type: string
-            message:
+            full_message:
+              type: string
+            short_message:
               type: string
             updated:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
@@ -64,7 +72,8 @@ spec:
               format: date-time
               type: string
           required:
-          - message
+          - full_message
+          - short_message
           - updated
           type: object
       type: object

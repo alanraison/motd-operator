@@ -16,7 +16,7 @@ func fetchMotd(options motdv1alpha1.MotdSourceSpec) (string, error) {
 		return "", fmt.Errorf("reading private key: %w", err)
 	}
 
-	c, err := ssh.Dial("tcp", fmt.Sprint(options.Hostname, ":", options.Port), &ssh.ClientConfig{
+	c, err := ssh.Dial("tcp", options.Address, &ssh.ClientConfig{
 		User: options.Username,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
@@ -24,7 +24,7 @@ func fetchMotd(options motdv1alpha1.MotdSourceSpec) (string, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	})
 	if err != nil {
-		return "", fmt.Errorf("connecting to %v: %w", options.Hostname, err)
+		return "", fmt.Errorf("connecting to %v: %w", options.Address, err)
 	}
 	sess, err := c.NewSession()
 	if err != nil {

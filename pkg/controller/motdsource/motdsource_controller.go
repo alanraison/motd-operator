@@ -1,6 +1,8 @@
 package motdsource
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"time"
 
@@ -110,8 +112,9 @@ func (r *ReconcileMotdSource) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 	status := motdv1alpha1.MotdSourceStatus{
-		Updated: metav1.Now(),
-		Message: motd,
+		Updated:      metav1.Now(),
+		ShortMessage: shortenMotd(motd),
+		FullMessage:  motd,
 	}
 	instance.Status = status
 	if err := r.client.Status().Update(context.TODO(), instance); err != nil {
@@ -123,4 +126,12 @@ func (r *ReconcileMotdSource) Reconcile(request reconcile.Request) (reconcile.Re
 		Requeue:      true,
 		RequeueAfter: 30 * time.Second,
 	}, nil
+}
+
+func shortenMotd(motd string) string {
+	buf := make([]byte, 30)
+	copy(buf, motd)
+	scanner := bufio.NewScanner(bytes.NewReader(buf))
+	scanner.Scan()
+	return scanner.Text()
 }
